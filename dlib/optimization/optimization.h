@@ -282,6 +282,10 @@ namespace dlib
     }
 
 // ----------------------------------------------------------------------------------------
+    struct minimizer_result {
+        double f_min = 0.0;
+        long n_steps = -1; // not all minimizers will fill this in
+    };
 
     template <
         typename search_strategy_type,
@@ -289,7 +293,7 @@ namespace dlib
         typename funct,
         typename T
         >
-    double find_min_using_approximate_derivatives (
+    minimizer_result find_min_using_approximate_derivatives (
         search_strategy_type search_strategy,
         stop_strategy_type stop_strategy,
         const funct& f,
@@ -320,8 +324,10 @@ namespace dlib
         if (!is_finite(g))
             throw error("The objective function generated non-finite outputs");
 
+        long n_steps = 0;
         while(stop_strategy.should_continue_search(x, f_value, g) && f_value > min_f)
         {
+            ++n_steps;
             s = search_strategy.get_next_direction(x, f_value, g);
 
             double alpha = line_search(
@@ -345,7 +351,7 @@ namespace dlib
                 throw error("The objective function generated non-finite outputs");
         }
 
-        return f_value;
+        return {f_value, n_steps};
     }
 
 // ----------------------------------------------------------------------------------------
