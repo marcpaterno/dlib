@@ -285,6 +285,7 @@ namespace dlib
     struct minimizer_result {
         double f_min = 0.0;
         long n_steps = -1; // not all minimizers will fill this in
+        std::vector<double> f_min_steps;
     };
 
     template <
@@ -325,9 +326,11 @@ namespace dlib
             throw error("The objective function generated non-finite outputs");
 
         long n_steps = 0;
+        std::vector<double> f_min_steps;
         while(stop_strategy.should_continue_search(x, f_value, g) && f_value > min_f)
         {
             ++n_steps;
+            f_min_steps.push_back(f_value);
             s = search_strategy.get_next_direction(x, f_value, g);
 
             double alpha = line_search(
@@ -351,7 +354,7 @@ namespace dlib
                 throw error("The objective function generated non-finite outputs");
         }
 
-        return {f_value, n_steps};
+        return {f_value, n_steps, f_min_steps};
     }
 
 // ----------------------------------------------------------------------------------------
